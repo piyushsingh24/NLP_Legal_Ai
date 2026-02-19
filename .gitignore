@@ -1,0 +1,26 @@
+# General
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.venv
+env/
+flask_server/.env
+flask_server/nbest.json
+
+# Node
+node_modules/
+.next/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vercel
+
+# Project Specific
+flask_server/test_contract.txt
+flask_server/test_risk_analysis.py
+*.log

@@ -1,0 +1,13 @@
+boto3
+torch
+streamlit
+transformers
+PyPDF4
+flask
+flask-cors
+textblob
+pandas
+numpy
+sentencepiece
+sacremoses
+
