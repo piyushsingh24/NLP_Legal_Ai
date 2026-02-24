@@ -1,13 +1,8 @@
-boto3
-torch
-streamlit
-transformers
-PyPDF4
 flask
 flask-cors
+google-genai
 textblob
+pypdf
+python-dotenv
 pandas
 numpy
-sentencepiece
-sacremoses
-

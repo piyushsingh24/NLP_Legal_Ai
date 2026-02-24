@@ -18,13 +18,17 @@
     "Lluis Agusti <hi@llu.lu>"
   ],
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@types/formidable": "^3.4.6",
     "animate.css": "^4.1.1",
     "axios": "^1.4.0",
     "bootstrap": "^5.2.3",
+    "formidable": "^3.5.4",
     "jquery": "^3.7.0",
     "next": "latest",
     "next-auth": "latest",
     "nodemailer": "^6",
+    "pdf-parse": "^2.4.5",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.4",
     "react-bootstrap-icons": "^1.10.3",
@@ -38,6 +42,7 @@
     "slick-carousel": "^1.8.1"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.15.8",
     "@types/jquery": "^3.5.16",
     "@types/node": "^17",
     "@types/react": "^18.0.37",
