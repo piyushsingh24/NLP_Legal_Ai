@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "rootDirectory": "web_app",
-  "installCommand": "npm install",
+  "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next"
 }
