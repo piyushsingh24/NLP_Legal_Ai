@@ -1,17 +1,12 @@
-import { withAuth } from "next-auth/middleware"
+// Middleware is intentionally empty — no authentication required
+// Edge Runtime compatible
 
-// More on how NextAuth.js middleware works: https://next-auth.js.org/configuration/nextjs#middleware
-export default withAuth({
-  callbacks: {
-    authorized({ req, token }) {
-      // `/admin` requires admin role
-      if (req.nextUrl.pathname === "/admin") {
-        return token?.userRole === "admin"
-      }
-      // `/me` only requires the user to be logged in
-      return !!token
-    },
-  },
-})
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export const config = { matcher: ["/admin", "/me"] }
+export function middleware(request: NextRequest) {
+  return NextResponse.next()
+}
+
+// Only run middleware on specific paths (none currently needed)
+export const config = { matcher: [] }
