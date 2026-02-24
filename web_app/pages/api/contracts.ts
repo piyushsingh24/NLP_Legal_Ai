@@ -43,10 +43,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       const paragraph = await extractText(file.filepath, file.originalFilename || '');
       if (!paragraph.trim()) return res.status(400).json({ error: 'Empty file' });
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const prompt = `Context:\n${paragraph}\n\nQuestion:\n${question}\n\nAnswer ONLY from context. If not found, say "No answer found in document". Be concise.`;
       const result = await model.generateContent(prompt);
       const answerText = result.response.text().trim() || 'No answer found in document';
+      console.log('Gemini Response:', answerText);
       return res.status(200).json([{ answer: answerText, probability: '99.0%', analyse: getAnalysis(answerText) }]);
     } catch (error) {
       return res.status(500).json([{ answer: `Error: ${String(error)}`, probability: '0%', analyse: 'neutral' }]);

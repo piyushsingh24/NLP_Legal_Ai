@@ -9,10 +9,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const prompt = `Paraphrase the following sentence in 3 different ways:\n'${text}'\nOutput ONLY the paraphrased sentences, one per line. No numbering or bullets.`;
     const result = await model.generateContent(prompt);
-    const paraphrases = result.response.text()
+    const rawResponse = result.response.text();
+    console.log('Gemini Paraphrase Response:', rawResponse);
+    const paraphrases = rawResponse
       .split('\n').map((l: string) => l.trim().replace(/^[-*]\s*/, '')).filter((l: string) => l.length > 0).slice(0, 5);
     res.status(200).json(paraphrases);
   } catch (error) {

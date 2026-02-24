@@ -32,10 +32,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       const paragraph = await extractText(file.filepath, file.originalFilename || '');
       if (!paragraph.trim()) return res.status(200).json({ summary: 'Empty document', detailed: '' });
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const prompt = `Analyze the following legal contract for risks, loopholes, and liabilities.\n\nCONTEXT:\n${paragraph}\n\nReturn a valid JSON with exactly two keys:\n1. "summary": Top 3-5 critical risks as plain text.\n2. "detailed": Comprehensive explanation citing specific clauses.\n\nDo NOT include markdown code fences. Just raw JSON.`;
       const result = await model.generateContent(prompt);
-      let text = result.response.text().trim();
+      const rawResponse = result.response.text();
+      console.log('Gemini Raw Risk Response:', rawResponse);
+      let text = rawResponse.trim();
       if (text.startsWith('```json')) text = text.slice(7);
       if (text.startsWith('```')) text = text.slice(3);
       if (text.endsWith('```')) text = text.slice(0, -3);
