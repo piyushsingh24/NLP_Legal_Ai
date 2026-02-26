@@ -1,20 +1,14 @@
-import { NavBar } from '../components/navbar'
+import NavBar from '../components/navbar';
+import Banner from '../components/banner';
+import Footer from '../components/footer';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Banner } from '../components/banner'
-import { Skills } from '../components/skills'
-import { Projects } from '../components/projects'
-import { Contact } from '../components/contact'
-import { Foooter } from '../components/foooter'
 
-export default function demo() {
+export default function Home() {
   return (
     <div className="App">
-       <NavBar />
-       <Banner />
-       <Foooter />
+      <NavBar />
+      <Banner />
+      <Footer />
     </div>
-    
-  )
+  );
 }
-
-

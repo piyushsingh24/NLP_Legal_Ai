@@ -308,8 +308,8 @@
   height: 200px;
   padding: 20px;
   border-radius: 10px;
-  border: 2px dashed rebeccapurple;
-  color: rebeccapurple;
+  border: 2px dashed #6948cc;
+  color: #6948cc;
   cursor: pointer;
   transition: background .2s ease-in-out, border .2s ease-in-out;
 }
@@ -320,11 +320,11 @@
 }
 
 .drop-container:hover .drop-title {
-  color: #222;
+  color: #c797eb;
 }
 
 .drop-title {
-  color: rebeccapurple;
+  color: #6948cc;
   font-size: 20px;
   font-weight: bold;
   text-align: center;
@@ -476,7 +476,8 @@ section.augs::before {
   width: 100%;
   height: 100%;
   resize: none;
-
+  color: #ffffff;
+  padding: 10px;
 }
 
 /* .dots {
@@ -524,7 +525,7 @@ section.augs::before {
 .code * {
   font-size: 18px;
   font-weight: normal;
-  color: #b5b4b6;
+  color: #e0e0e0;
   font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
 }
 

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { Navbar, Nav, Container } from "react-bootstrap";
-// import logo from '/assets/img/new_logo.png'; // Invalid absolute path import
 import Link from "next/link";
 import { useRouter } from 'next/router';
 
-export const NavBar = () => {
+const NavBar = () => {
   const [activeLink, setActiveLink] = useState('home');
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
@@ -65,3 +64,5 @@ export const NavBar = () => {
     </Navbar>
   );
 };
+
+export default NavBar;

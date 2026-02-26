@@ -25,34 +25,71 @@ function getAnalysis(answer: string): string {
   return score > 0 ? 'positive' : score < 0 ? 'negative' : 'neutral';
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+  if (!apiKey) {
+    res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+    return;
+  }
 
   const form = new IncomingForm({ keepExtensions: true });
-  form.parse(req, async (err: Error | null, fields: Fields, files: Files) => {
-    if (err) return res.status(500).json({ error: String(err) });
+
+  try {
+    const { fields, files } = await new Promise<{ fields: Fields; files: Files }>((resolve, reject) => {
+      form.parse(req, (err: Error | null, fields: Fields, files: Files) => {
+        if (err) reject(err);
+        else resolve({ fields, files });
+      });
+    });
+
     const fileArr = files.file;
     const file = Array.isArray(fileArr) ? fileArr[0] : fileArr;
-    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+    if (!file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+
     const q = fields.question;
     const question = (Array.isArray(q) ? q[0] : q) || '';
-    if (!question.trim()) return res.status(400).json({ error: 'No question provided' });
+    if (!question.trim()) {
+      res.status(400).json({ error: 'No question provided' });
+      return;
+    }
+
     try {
       const paragraph = await extractText(file.filepath, file.originalFilename || '');
-      if (!paragraph.trim()) return res.status(400).json({ error: 'Empty file' });
+      if (!paragraph.trim()) {
+        res.status(400).json({ error: 'The uploaded file appears to be empty.' });
+        return;
+      }
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `Context:\n${paragraph}\n\nQuestion:\n${question}\n\nAnswer ONLY from context. If not found, say "No answer found in document". Be concise.`;
-      const result = await model.generateContent(prompt);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+
+      // Ensure text is within reasonable bounds for a single prompt
+      const processedText = paragraph.length > 30000 ? paragraph.slice(0, 30000) + "... [truncated for length]" : paragraph;
+
+      const prompt = `Context:\n${processedText}\n\nQuestion:\n${question}\n\nAnswer ONLY from context. If not found, say "No answer found in document". Be concise.`;
+
+      const result = await model.generateContent(prompt).catch(err => {
+        console.error('Gemini API Error (Contracts):', err);
+        throw new Error(`AI Generation failed: ${err.message}`);
+      });
+
       const answerText = result.response.text().trim() || 'No answer found in document';
       console.log('Gemini Response:', answerText);
-      return res.status(200).json([{ answer: answerText, probability: '99.0%', analyse: getAnalysis(answerText) }]);
-    } catch (error) {
-      return res.status(500).json([{ answer: `Error: ${String(error)}`, probability: '0%', analyse: 'neutral' }]);
+      res.status(200).json([{ answer: answerText, probability: '99.0%', analyse: getAnalysis(answerText) }]);
+    } catch (error: any) {
+      console.error('Inner handler error:', error);
+      res.status(500).json({ error: `AI Error: ${error.message}` });
     } finally {
       try { fs.unlinkSync(file.filepath); } catch { }
     }
-  });
+  } catch (error) {
+    console.error('Form parse error:', error);
+    res.status(500).json({ error: String(error) });
+  }
 }

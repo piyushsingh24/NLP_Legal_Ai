@@ -5,6 +5,10 @@ import path from 'path';
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const filePath = path.join(process.cwd(), 'public', 'data', 'questions_short.txt');
+    if (!fs.existsSync(filePath)) {
+      res.status(404).json({ error: 'Questions file not found' });
+      return;
+    }
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const questions = fileContent
       .split('\n')

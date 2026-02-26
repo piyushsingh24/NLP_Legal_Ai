@@ -1,28 +1,17 @@
-import Link from "next/link"
-import styles from "./footer.module.css"
-import packageJSON from "../package.json"
+import { Container, Row, Col } from "react-bootstrap";
 
-export default function Footer() {
+const Footer = () => {
   return (
-    <footer className={styles.footer}>
-      <hr />
-      <ul className={styles.navItems}>
-        <li className={styles.navItem}>
-          <a href="https://next-auth.js.org">Documentation</a>
-        </li>
-        <li className={styles.navItem}>
-          <a href="https://www.npmjs.com/package/next-auth">NPM</a>
-        </li>
-        <li className={styles.navItem}>
-          <a href="https://github.com/nextauthjs/next-auth-example">GitHub</a>
-        </li>
-        <li className={styles.navItem}>
-          <Link href="/policy">Policy</Link>
-        </li>
-        <li className={styles.navItem}>
-          <em>next-auth@{packageJSON.dependencies["next-auth"]}</em>
-        </li>
-      </ul>
+    <footer className="footer" style={{ padding: '20px 0', backgroundColor: '#121212', color: '#B8B8B8' }}>
+      <Container>
+        <Row className="align-items-center">
+          <Col xs={12} className="text-center">
+            <p style={{ margin: 0 }}>Copyright 2026 Legal AI. All Rights Reserved</p>
+          </Col>
+        </Row>
+      </Container>
     </footer>
-  )
-}
+  );
+};
+
+export default Footer;
