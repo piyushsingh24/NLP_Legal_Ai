@@ -25,7 +25,8 @@
   transition: color 0.3s ease;
 }
 
-.navbar-link:hover, .navbar-link.active {
+.navbar-link:hover,
+.navbar-link.active {
   color: #c797eb !important;
 }
 
@@ -90,20 +91,219 @@
 }
 
 @keyframes updown {
-    0% { transform: translateY(-20px); }
-    50% { transform: translateY(20px); }
-    100% { transform: translateY(-20px); }
+  0% {
+    transform: translateY(-20px);
+  }
+
+  50% {
+    transform: translateY(20px);
+  }
+
+  100% {
+    transform: translateY(-20px);
+  }
 }
 
 /* Dashboard Aesthetics */
 .titre {
-    color: #fff;
-    text-align: center;
-    padding: 60px 0 20px 0;
+  color: #fff;
+  text-align: center;
+  padding: 100px 0 40px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.titre .first-word {
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #c797eb, #6948cc);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.titre .complete-phrase {
+  font-size: 1.5rem;
+  color: #B8B8B8;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .dashboard {
-    background-color: #121212;
-    min-height: 100vh;
-    padding-bottom: 60px;
+  background: radial-gradient(circle at top, #1a1a2e 0%, #121212 100%);
+  min-height: 100vh;
+  padding: 40px 20px 100px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-color: rgba(199, 151, 235, 0.3);
+}
+
+.drop-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+  border: 2px dashed rgba(199, 151, 235, 0.4);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 25px;
+  background: rgba(199, 151, 235, 0.05);
+}
+
+.drop-container:hover {
+  border-color: #c797eb;
+  background: rgba(199, 151, 235, 0.1);
+}
+
+.drop-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.select-box {
+  width: 100%;
+  padding: 15px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 25px;
+  outline: none;
+  cursor: pointer;
+}
+
+.select-box:focus {
+  border-color: #c797eb;
+}
+
+.custom-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-8 {
+  background: linear-gradient(90deg, #c797eb, #6948cc);
+  color: #fff;
+  border: none;
+}
+
+.btn-8:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 20px rgba(199, 151, 235, 0.4);
+}
+
+.response-area {
+  margin-top: 40px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.response-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #c797eb;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.code-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(199, 151, 235, 0.2);
+  border-radius: 15px;
+  padding: 20px;
+  color: #e0e0e0;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.risk-section {
+  border-left: 4px solid #ff4d4d;
+  background: rgba(255, 77, 77, 0.05);
+  padding: 25px;
+  border-radius: 0 15px 15px 0;
+}
+
+.risk-title {
+  color: #ff4d4d;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paraphrase-section {
+  border-left: 4px solid #c797eb;
+  background: rgba(199, 151, 235, 0.05);
+  padding: 25px;
+  border-radius: 0 15px 15px 0;
+}
+
+.status-indicator {
+  padding: 10px 20px;
+  border-radius: 30px;
+  background: rgba(199, 151, 235, 0.1);
+  color: #c797eb;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.7;
+  }
+}
+
+footer {
+  width: 100%;
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: auto;
 }

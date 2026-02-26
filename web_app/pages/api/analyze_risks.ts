@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { IncomingForm, Fields, Files } from 'formidable';
 import fs from 'fs';
 
@@ -44,6 +43,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(400).json({ error: 'No file uploaded' });
       return;
     }
+    if (file.size > 10 * 1024 * 1024) {
+      res.status(400).json({ error: 'File is too large. Maximum size is 10MB.' });
+      return;
+    }
 
     try {
       const paragraph = await extractText(file.filepath, file.originalFilename || '');
@@ -52,28 +55,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return;
       }
 
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
       // Chunking if text is very large (arbitrary limit for prompt stability)
-      const MAX_CHARS = 30000;
+      const MAX_CHARS = 20000;
       let processedText = paragraph;
       if (paragraph.length > MAX_CHARS) {
-        console.log(`Large document detected (${paragraph.length} chars). Truncating or chunking might be needed, but trying 1.5-flash capacity first.`);
-        // For now, we'll try to send it, but if it fails we might need a more complex strategy.
-        // Actually, let's implement a simple truncation for safety or just pass it if it's within limits.
-        // gemini-1.5-flash can handle 1M tokens, so 30k chars is well within.
-        // The issue might be the response time or a specific error.
+        console.log(`Large document detected (${paragraph.length} chars). Truncating to ${MAX_CHARS} chars.`);
+        processedText = paragraph.slice(0, MAX_CHARS) + "... [truncated for length]";
       }
 
       const prompt = `Analyze the following legal contract for risks, loopholes, and liabilities.\n\nCONTEXT:\n${processedText}\n\nReturn a valid JSON with exactly two keys:\n1. "summary": Top 3-5 critical risks as plain text.\n2. "detailed": Comprehensive explanation citing specific clauses.\n\nDo NOT include markdown code fences. Just raw JSON.`;
 
-      const result = await model.generateContent(prompt).catch(err => {
-        console.error('Gemini API Error:', err);
-        throw new Error(`Gemini API failed: ${err.message}`);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
       });
 
-      const rawResponse = result.response.text();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Gemini API Error:', errorData);
+        throw new Error(`Gemini API failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const rawResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       console.log('Gemini Raw Risk Response:', rawResponse);
       let text = rawResponse.trim();
       if (text.startsWith('```json')) text = text.slice(7);

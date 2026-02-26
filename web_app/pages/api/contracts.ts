@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { IncomingForm, Fields, Files } from 'formidable';
 import fs from 'fs';
 
@@ -52,6 +51,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(400).json({ error: 'No file uploaded' });
       return;
     }
+    if (file.size > 10 * 1024 * 1024) {
+      res.status(400).json({ error: 'File is too large. Maximum size is 10MB.' });
+      return;
+    }
 
     const q = fields.question;
     const question = (Array.isArray(q) ? q[0] : q) || '';
@@ -66,20 +69,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(400).json({ error: 'The uploaded file appears to be empty.' });
         return;
       }
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-
       // Ensure text is within reasonable bounds for a single prompt
-      const processedText = paragraph.length > 30000 ? paragraph.slice(0, 30000) + "... [truncated for length]" : paragraph;
+      const processedText = paragraph.length > 20000 ? paragraph.slice(0, 20000) + "... [truncated for length]" : paragraph;
 
       const prompt = `Context:\n${processedText}\n\nQuestion:\n${question}\n\nAnswer ONLY from context. If not found, say "No answer found in document". Be concise.`;
 
-      const result = await model.generateContent(prompt).catch(err => {
-        console.error('Gemini API Error (Contracts):', err);
-        throw new Error(`AI Generation failed: ${err.message}`);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
       });
 
-      const answerText = result.response.text().trim() || 'No answer found in document';
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Gemini API Error (Contracts):', errorData);
+        throw new Error(`AI Generation failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const answerText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'No answer found in document';
       console.log('Gemini Response:', answerText);
       res.status(200).json([{ answer: answerText, probability: '99.0%', analyse: getAnalysis(answerText) }]);
     } catch (error: any) {
