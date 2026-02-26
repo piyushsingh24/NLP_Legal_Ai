@@ -4,6 +4,7 @@ import fs from 'fs';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse = require('pdf-parse');
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const config = { api: { bodyParser: false } };
 
@@ -55,52 +56,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return;
       }
 
-      // Chunking if text is very large (arbitrary limit for prompt stability)
       const MAX_CHARS = 20000;
-      let processedText = paragraph;
-      if (paragraph.length > MAX_CHARS) {
-        console.log(`Large document detected (${paragraph.length} chars). Truncating to ${MAX_CHARS} chars.`);
-        processedText = paragraph.slice(0, MAX_CHARS) + "... [truncated for length]";
-      }
+      let processedText = paragraph.length > MAX_CHARS ? paragraph.slice(0, MAX_CHARS) : paragraph;
 
-      const prompt = `Analyze the following legal contract for risks, loopholes, and liabilities.\n\nCONTEXT:\n${processedText}\n\nReturn a valid JSON with exactly two keys:\n1. "summary": Top 3-5 critical risks as plain text.\n2. "detailed": Comprehensive explanation citing specific clauses.\n\nDo NOT include markdown code fences. Just raw JSON.`;
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ]
-        })
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+        generationConfig: { responseMimeType: "application/json" }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Gemini API Error:', errorData);
-        throw new Error(`Gemini API failed: ${response.status} ${response.statusText}`);
-      }
+      const prompt = `Analyze the following legal contract for risks, loopholes, and liabilities.\n\nCONTEXT:\n${processedText}\n\nReturn EXACTLY this JSON format:\n{\n  "summary": "Top 3-5 critical risks",\n  "detailed": "Detailed explanation"\n}`;
 
-      const data = await response.json();
-      const rawResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      console.log('Gemini Raw Risk Response:', rawResponse);
-      let text = rawResponse.trim();
-      if (text.startsWith('```json')) text = text.slice(7);
-      if (text.startsWith('```')) text = text.slice(3);
-      if (text.endsWith('```')) text = text.slice(0, -3);
-      text = text.trim();
+      const result = await model.generateContent(prompt);
+      const rawResponse = result.response.text();
+
+      console.log('Gemini SDK Risk Response:', rawResponse);
       try {
-        res.status(200).json(JSON.parse(text));
+        res.status(200).json(JSON.parse(rawResponse));
       } catch {
-        res.status(200).json({ summary: 'Could not parse analysis output.', detailed: text });
+        // Fallback if JSON parsing fails
+        res.status(200).json({ summary: 'Analysis complete but output format was unexpected.', detailed: rawResponse });
       }
     } catch (error: any) {
       console.error('Risk analysis processing error:', error);

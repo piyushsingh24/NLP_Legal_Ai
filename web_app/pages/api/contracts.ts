@@ -4,6 +4,7 @@ import fs from 'fs';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse = require('pdf-parse');
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const config = { api: { bodyParser: false } };
 
@@ -69,38 +70,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(400).json({ error: 'The uploaded file appears to be empty.' });
         return;
       }
-      // Ensure text is within reasonable bounds for a single prompt
-      const processedText = paragraph.length > 20000 ? paragraph.slice(0, 20000) + "... [truncated for length]" : paragraph;
+      const processedText = paragraph.length > 20000 ? paragraph.slice(0, 20000) : paragraph;
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       const prompt = `Context:\n${processedText}\n\nQuestion:\n${question}\n\nAnswer ONLY from context. If not found, say "No answer found in document". Be concise.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ]
-        })
-      });
+      const result = await model.generateContent(prompt);
+      const answerText = result.response.text() || 'No answer found in document';
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Gemini API Error (Contracts):', errorData);
-        throw new Error(`AI Generation failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const answerText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'No answer found in document';
-      console.log('Gemini Response:', answerText);
+      console.log('Gemini SDK Response:', answerText);
       res.status(200).json([{ answer: answerText, probability: '99.0%', analyse: getAnalysis(answerText) }]);
     } catch (error: any) {
       console.error('Inner handler error:', error);
